@@ -66,3 +66,6 @@ URL: http://localhost:8080/download
 Создайте новый запрос GET.
 Введите URL http://localhost:8080/download?filename=file.txt.
 Нажмите Send и скачайте файл.
+
+## ЗАПУСК ПРИЛОЖЕНИЯ С ПОМОЩЬЮ DOCKER
+Введите в терминале `docker compose up --build`
