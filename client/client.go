@@ -44,7 +44,7 @@ func UploadFile(filename string) error {
 	}()
 
 	// Отправляем POST-запрос на сервер
-	req, err := http.NewRequest("POST", "http://localhost:8080/upload", bodyReader)
+	req, err := http.NewRequest("POST", "http://server:8080/upload", bodyReader)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func UploadFile(filename string) error {
 }
 func DownloadFile(filename string) error {
 	// Запрос на скачивание
-	resp, err := http.Get("http://localhost:8080/download?filename=" + filename)
+	resp, err := http.Get("http://server:8080/download?filename=" + filename)
 	if err != nil {
 		return err
 	}

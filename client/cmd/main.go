@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/lahnasti/clientServerApp/client"
 )
@@ -16,21 +17,31 @@ func main() {
 	// Разбираем флаги
 	flag.Parse()
 
-	// Определяем, какой флаг был использован
-	if *uploadFlag != "" {
-		err := client.UploadFile(*uploadFlag)
-		if err != nil {
-			log.Fatalf("Error uploading file: %v", err)
+	for {
+		// Определяем, какой флаг был использован
+		if *uploadFlag != "" {
+			err := client.UploadFile(*uploadFlag)
+			if err != nil {
+				log.Printf("Error uploading file: %v", err)
+			} else {
+				fmt.Println("File uploaded successfully.")
+			}
+			// Ожидание перед следующей проверкой
+			time.Sleep(10 * time.Second) // Задержка в 10 секунд
+		} else if *downloadFlag != "" {
+			err := client.DownloadFile(*downloadFlag)
+			if err != nil {
+				log.Printf("Error downloading file: %v", err)
+			} else {
+				fmt.Println("File downloaded successfully.")
+			}
+			// Ожидание перед следующей проверкой
+			time.Sleep(10 * time.Second) // Задержка в 10 секунд
+		} else {
+			// Если нет аргументов, выводим инструкцию и ждём 10 секунд
+			fmt.Println("Usage:")
+			flag.PrintDefaults()
+			time.Sleep(10 * time.Second) // Задержка в 10 секунд
 		}
-		fmt.Println("File uploaded successfully.")
-	} else if *downloadFlag != "" {
-		err := client.DownloadFile(*downloadFlag)
-		if err != nil {
-			log.Fatalf("Error downloading file: %v", err)
-		}
-		fmt.Println("File downloaded successfully.")
-	} else {
-		fmt.Println("Usage:")
-		flag.PrintDefaults()
 	}
 }
