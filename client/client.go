@@ -11,33 +11,46 @@ import (
 )
 
 func UploadFile(filename string) error {
+	fmt.Println("Trying to open file:", filename)
 	file, err := os.Open(filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open file %s: %v", filename, err)
 	}
 	defer file.Close()
 
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("file", filepath.Base(file.Name()))
-	if err != nil {
-		return err
-	}
-	
-	// Копируем содержимое файла в форму
-	_, err = io.Copy(part, file)
-	if err != nil {
-		return err
-	}
+	fmt.Println("File opened successfully")
 
-	// Закрываем writer, чтобы завершить формирование данных
-	err = writer.Close()
-	if err != nil {
-		return err
-	}
+	// Создаем поток данных
+	bodyReader, bodyWriter := io.Pipe()
+	writer := multipart.NewWriter(bodyWriter)
+
+	go func() {
+		defer bodyWriter.Close()
+		part, err := writer.CreateFormFile("file", filepath.Base(file.Name()))
+		if err != nil {
+			fmt.Println("Error creating form file:", err)
+			return
+		}
+
+		// Потоковое копирование данных из файла в форму multipart.Writer
+		_, err = io.Copy(part, file)
+		if err != nil {
+			fmt.Println("Error copying file to part:", err)
+			return
+		}
+
+		// Закрываем writer, чтобы завершить формирование данных
+		writer.Close()
+	}()
 
 	// Отправляем POST-запрос на сервер
-	resp, err := http.Post("http://localhost:8080/upload", writer.FormDataContentType(), body)
+	req, err := http.NewRequest("POST", "http://localhost:8080/upload", bodyReader)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -51,8 +64,8 @@ func UploadFile(filename string) error {
 	fmt.Println("File uploaded successfully")
 	return nil
 }
-
 func DownloadFile(filename string) error {
+	// Запрос на скачивание
 	resp, err := http.Get("http://localhost:8080/download?filename=" + filename)
 	if err != nil {
 		return err
@@ -63,16 +76,22 @@ func DownloadFile(filename string) error {
 		return fmt.Errorf("failed to download file: %s", resp.Status)
 	}
 
+	// Читаем содержимое ответа
+	var buffer bytes.Buffer
+	_, err = io.Copy(&buffer, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	// Выводим содержимое на консоль
+	fmt.Println("File contents:")
+	fmt.Println(buffer.String())
+	// Открытие файла для записи
 	out, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
-
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
 
 	fmt.Println("File downloaded successfully")
 	return nil

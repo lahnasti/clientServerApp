@@ -1,30 +1,45 @@
 package handlers
 
 import (
+	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 )
 
-const uploadPath = "./upload"
-
 func UploadFileHandler(ctx *gin.Context) {
-	file, err := ctx.FormFile("file")
+	 // Создаем папку uploads, если она не существует
+	 if _, err := os.Stat("./uploads"); os.IsNotExist(err) {
+        err := os.Mkdir("./uploads", os.ModePerm)
+        if err != nil {
+            log.Fatalf("Failed to create directory: %v", err)
+        }
+    }
+	// Получаем файл из запроса
+	file, header, err := ctx.Request.FormFile("file")
 	if err != nil {
-		ctx.String(http.StatusBadRequest, "Failed to get file: %s", err.Error())
+		ctx.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
 		return
 	}
-	err = os.MkdirAll(uploadPath, os.ModePerm)
+	defer file.Close()
+
+	// Создаем файл на диске
+	out, err := os.Create("./uploads/" + header.Filename)
 	if err != nil {
-		ctx.String(http.StatusInternalServerError, "Failed to create upload directory: %s", err.Error())
+		ctx.String(http.StatusInternalServerError, fmt.Sprintf("create file err: %s", err.Error()))
 		return
 	}
-	filePath := filepath.Join(uploadPath, filepath.Base(file.Filename))
-	if err := ctx.SaveUploadedFile(file, filePath); err != nil {
-		ctx.String(http.StatusInternalServerError, "Failed to save file: %s", err.Error())
-        return
+	defer out.Close()
+
+	// Копируем данные из входящего файла в файл на диске блоками
+	_, err = io.Copy(out, file)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, fmt.Sprintf("copy file err: %s", err.Error()))
+		return
 	}
-	ctx.String(http.StatusOK, "File uploaded successfully: %s", file.Filename)
+
+	ctx.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", header.Filename))
 }
