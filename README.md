@@ -1,5 +1,5 @@
 # clientServerApp
-Тестовое задание: Создать клиент-серверное приложение для хранилища данных, в котором пользователи смогут загружать данные на сервер.
+Клиент-серверное приложение для хранилища данных, в котором пользователи смогут загружать данные на сервер.
 
 ## ОСОБЕННОСТИ ПРОЕКТА
 
@@ -14,27 +14,25 @@
 ## ТРЕБОВАНИЯ
 - Go 1.22 или выше
 - Postman (опционально, для тестирования API)
-- Docker (опционально, для сборки приложения)
+- Docker (для сборки приложения)
 
 ## ЗАПУСК ПРИЛОЖЕНИЯ С ПОМОЩЬЮ DOCKER
-1. Соберем образы: введите в терминале `docker compose build`
-2. Запустим контейнеры : `docker compose up -d`
-3. docker-compose run client ./cli -register -login user -password test -url http://server:8080
-4. docker-compose run client ./cli -auth -login user -password test -url http://server:8080
-![]()
-5. docker cp /your/path/file.txt clientserverapp-client-1:/app/file.txt
-6. docker-compose exec client ./cli -upload /app/file.txt -token your_token -url http://server:8080
-![]()
-7. docker-compose exec client ./cli -download file.txt -token your_token -url http://server:8080
-
+1. Склонировать проект с github с помощью http, перейти в корневую директорию.
+2. Запустить контейнеры: `docker compose up -d`
+3. Пройти регистрацию: `docker-compose run client ./cli -register -login user -password test -url http://server:8080`
+4. Пройти аутентификацию: `docker-compose run client ./cli -auth -login user -password test -url http://server:8080`
+5. Скопировать свой текстовый файл в рабочий каталог app: `docker cp /your/path/file.txt clientserverapp-client-1:/app/file.txt`
+6. Загрузить файл: `docker-compose exec client ./cli -upload /app/file.txt -token your_token -url http://server:8080`
+7. Скачать файл: `docker-compose exec client ./cli -download file.txt -token your_token -url http://server:8080`
 
 ## ЗАПУСК ПРИЛОЖЕНИЯ ЧЕРЕЗ TEST.SH
 1. Открыть файл ./test.sh, отредактировать пути, где находится файл и имя файла `(/your/path/file.txt)`
-2. Убедиться, что скрипт имеет права на выполнение: `chmod +x test.sh`
-3. Запустить скрипт: `./test.sh`
+2. Убедиться, что скрипт имеет права на выполнение, ввести команду в терминале: `chmod +x test.sh`
+3. Команда для запуска скрипта: `./test.sh`
 
 
 ## Что можно улучшить в будущем:
 - Написать тесты
 - Возможность обновлять информацию в бд по пользователям: какие файлы загружены, скачаны, вес файлов и тп.
 - Оптимизировать код для быстрой работы.
+- Учесть возможность загрузки других форматов.
