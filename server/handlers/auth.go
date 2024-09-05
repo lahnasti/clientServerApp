@@ -2,43 +2,42 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lahnasti/clientServerApp/server/handlers/jwt"
 	"github.com/lahnasti/clientServerApp/server/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserRepo interface {
-	RegisterUser(models.User) (int, error)
-}
-
-type Server struct {
-	Db UserRepo
-}
-
-func NewServer(db UserRepo) *Server {
-	return &Server{
-		Db: db,
-	}
-}
-
-func (s *Server) RegisterUserHandler(ctx *gin.Context) {
-	// Регистрация пользователя
+func (s *Server) LoginUserHandler(ctx *gin.Context) {
 	var user models.User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid params", "error": err.Error()})
 		return
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+
+	// Проверяем наличие пользователя в базе
+	userFromDB, err := s.Db.GetUserByLogin(user.Login)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to hash password", "error": err.Error()})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials: user not found", "error": err.Error()})
 		return
 	}
-	user.Password = string(hash)
-	uid, err := s.Db.RegisterUser(user)
+
+	// Проверяем пароль
+	err = bcrypt.CompareHashAndPassword([]byte(userFromDB.Password), []byte(user.Password))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to register user", "error": err.Error()})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials: incorrect password", "error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "User registered successfully", "uid": uid})
+
+	uidStr := strconv.Itoa(userFromDB.UID)
+	token, err := jwt.GenerateToken(uidStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate JWT token", "error": err.Error()})
+		return
+	}
+
+	// Возвращаем токен в теле ответа
+	ctx.JSON(http.StatusOK, gin.H{"token": token})
 }

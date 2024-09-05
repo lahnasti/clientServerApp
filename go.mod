@@ -3,6 +3,7 @@ module github.com/lahnasti/clientServerApp
 go 1.22.3
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-migrate/migrate/v4 v4.17.1
 	github.com/jackc/pgx/v4 v4.18.3

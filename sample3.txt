@@ -1,0 +1,2 @@
+<a href="/download/?filename=sample3.txt">Moved Permanently</a>.
+

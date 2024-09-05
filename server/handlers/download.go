@@ -35,7 +35,6 @@ func DownloadFileHandler(c *gin.Context) {
 	}
 }
 
-
 // Вспомогательная функция для получения размера файла
 func getFileSize(filepath string) int64 {
 	fileInfo, err := os.Stat(filepath)

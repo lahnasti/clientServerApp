@@ -7,84 +7,27 @@
 2. Docker-compose для организации работы нескольких контейнеров(клиента и сервера) вместе. 
 3. Использование фреймворка Gin для создания REST API.
 4. Регистрация пользователя и хэширование пароля.
-5. Middleware для
-6. PostgreSQL для хранения в БД данных о пользователях.
-
+5. Аутентификация пользователя через JWT: Middleware проверяет, существует ли токен в запросе. Реализовано для защиты маршрутов загрузки и скачивания файлов.
+6. PostgreSQL для хранения в БД данных о пользователях (логин, пароль)
+7. Миграции для поддержки БД в актуальном состоянии.
 
 ## ТРЕБОВАНИЯ
 - Go 1.22 или выше
 - Postman (опционально, для тестирования API)
 - Docker (опционально, для сборки приложения)
 
-## ЗАПУСК ПРИЛОЖЕНИЯ БЕЗ ИСПОЛЬЗОВАНИЯ DOCKER
-*Сборка сервера:*
-1. Перейдите в директорию server/cmd: `cd clientServerApp/server/cmd`
-2. Соберите серверную часть: `go build -o server main.go`
-3. Запустите в первом терминале: `./server`
-После этого сервер начнет прослушивать HTTP-запросы на порту 8080.
-
-*Сборка клиента:*
-1. Перейдите в директорию client: `cd clientServerApp/client/cmd`
-2. Соберите клиентскую часть: `go build -o client main.go`
-
-*Тестирование с помощью терминала*
- В зависимости от того, что вы хотите сделать (загрузить или скачать файл), выполните соответствующую команду во втором терминале:
-- для загрузки файла`./cli --upload="/your/path/yourfile.txt"`
-- для скачивания файла `./cli --download="yourfile.txt"`
-
-## ИСПОЛЬЗОВАНИЕ API
-*API предоставляет два основных маршрута для работы с файлами:* 
-- загрузка (POST /upload)
-- скачивание (GET /download)
-
-*Загрузка файла (POST /upload)*
-URL: http://localhost:8080/upload
-
-Метод: POST
-
-Описание: Загружает файл на сервер.
-
-Параметры:
-
-- file (формат данных form-data): Файл, который нужно загрузить.
-
-*Пример с использованием curl:*
-`curl -F "file=@path/to/your/file.txt" http://localhost:8080/upload`
-
-*Пример с использованием Postman:*
-
-Создайте новый запрос POST.
-Введите URL http://localhost:8080/upload.
-Headers: Content-Type: multipart/form-data
-На вкладке Body выберите form-data.
-В поле ключа добавьте file и выберите тип File.
-Выберите файл и нажмите Send.
-
-![](/clientServerApp/screen/post_test.png)
-
-*Скачивание файла (GET /download)*
-URL: http://localhost:8080/download
-
-Метод: GET
-
-Описание: Скачивает файл с сервера.
-
-Параметры:
-
-- filename (Query): Имя файла, который нужно скачать.
-
-*Пример с использованием curl:*
-`curl -O http://localhost:8080/download?filename=file.txt`
-
-*Пример с использованием Postman:*
-
-Создайте новый запрос GET.
-Введите URL http://localhost:8080/download?filename=file.txt.
-Headers: не требуется.
-Нажмите Send и скачайте файл.
-
-![](/clientServerApp/screen/get_test.png)
-
 ## ЗАПУСК ПРИЛОЖЕНИЯ С ПОМОЩЬЮ DOCKER
-Введите в терминале `docker compose up --build`
-Используйте тот же метод тестирование API с помощью Postman, который описан выше.
+1. Соберем образы: введите в терминале `docker compose build`
+2. Запустим контейнеры : `docker compose up -d`
+3. docker-compose run client ./cli -register -login user -password test -url http://server:8080
+4. docker-compose run client ./cli -auth -login user -password test -url http://server:8080
+![]()
+5. docker cp /your/path/file.txt clientserverapp-client-1:/app/file.txt
+6. docker-compose exec client ./cli -upload /app/file.txt -token your_token -url http://server:8080
+![]()
+7. docker-compose exec client ./cli -download file.txt -token your_token -url http://server:8080
+
+## Что можно улучшить в будущем:
+- Написать тесты
+- Возможность обновлять информацию в бд по пользователям: какие файлы загружены, скачаны, вес файлов и тп.
+- Оптимизировать код для быстрой работы.

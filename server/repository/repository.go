@@ -29,3 +29,15 @@ func (db DBstorage) RegisterUser(user models.User) (int, error) {
 	}
 	return uid, nil
 }
+
+func (db DBstorage) GetUserByLogin(login string) (models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	query := `SELECT login, password FROM users WHERE login=$1`
+	var user models.User
+	err := db.conn.QueryRow(ctx, query, login).Scan(&user.Login, &user.Password)
+	if err != nil {
+		return models.User{}, err
+	}
+	return user, nil
+}

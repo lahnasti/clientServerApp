@@ -39,8 +39,8 @@ func main() {
 
 	server := handlers.NewServer(db)
 
-	r := routes.UserRoutes()
-	r.POST("/register", server.RegisterUserHandler)
+	r := routes.SetupRoutes(server)
+
 	zlog.Info().Msgf("Starting server on %s", cfg.Addr)
 
 	if err := r.Run(cfg.Addr); err != nil {
