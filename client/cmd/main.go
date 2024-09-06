@@ -20,7 +20,6 @@ func main() {
 	tokenFlag := flag.String("token", "", "JWT token for authentication")
 	serverURL := flag.String("url", "http://server:8080", "URL of the server")
 
-	// Разбираем флаги
 	flag.Parse()
 
 	if *loginFlag == "" || *passwordFlag == "" {
@@ -78,7 +77,6 @@ func main() {
 			}
 
 		} else {
-			// Если нет аргументов, выводим инструкцию и ждём 10 секунд
 			fmt.Println("Usage:")
 			flag.PrintDefaults()
 		}
